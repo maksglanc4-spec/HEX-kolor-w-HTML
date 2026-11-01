@@ -1,0 +1,441 @@
+
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wielka Paleta Kolorów HTML</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Quicksand:wght@500;700&display=swap');
+        
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background-color: #f8fafc;
+            -webkit-tap-highlight-color: transparent;
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3, button, .category-badge {
+            font-family: 'Fredoka', sans-serif;
+        }
+
+        /* 1. Unoszące się kule w tle */
+        @keyframes floatBubble {
+            0%, 100% { transform: translateY(0px) scale(1); }
+            50% { transform: translateY(-30px) scale(1.08); }
+        }
+
+        .bg-bubble-1 {
+            animation: floatBubble 8s infinite ease-in-out;
+        }
+        .bg-bubble-2 {
+            animation: floatBubble 10s infinite ease-in-out 2s;
+        }
+        .bg-bubble-3 {
+            animation: floatBubble 9s infinite ease-in-out 4s;
+        }
+
+        /* 2. Zaokrąglone kafelki kolorów z animacjami najechania i dotyku */
+        .color-card {
+            border-radius: 1.5rem;
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease, border-color 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Błysk / Shimmer przy najechaniu */
+        .color-card::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(60deg, transparent, rgba(255,255,255,0.25), transparent);
+            transform: rotate(30deg) translateY(-100%);
+            transition: transform 0.6s ease;
+        }
+
+        .color-card:hover::after {
+            transform: rotate(30deg) translateY(100%);
+        }
+
+        .color-card:hover {
+            transform: translateY(-6px) scale(1.04);
+            box-shadow: 0 16px 25px -8px rgba(0, 0, 0, 0.18);
+        }
+        
+        .color-card:active {
+            transform: scale(0.92);
+            transition: transform 0.1s ease;
+        }
+
+        /* 3. Animacja stopniowego pojawiania się (Fade-In Staggered) */
+        @keyframes cardAppear {
+            from {
+                opacity: 0;
+                transform: translateY(20px) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .animate-card-appear {
+            animation: cardAppear 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        /* 4. Animacje dla Okienka Modal (Pop-In z odbiciem i rozmyciem tła) */
+        @keyframes backdropFadeIn {
+            from { opacity: 0; backdrop-filter: blur(0px); }
+            to { opacity: 1; backdrop-filter: blur(8px); }
+        }
+
+        @keyframes modalBounceIn {
+            0% {
+                opacity: 0;
+                transform: scale(0.5) translateY(60px) rotate(-4deg);
+            }
+            70% {
+                transform: scale(1.06) translateY(-8px) rotate(1deg);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1) translateY(0) rotate(0deg);
+            }
+        }
+
+        .modal-overlay-active {
+            display: flex !important;
+            animation: backdropFadeIn 0.3s forwards ease-out;
+        }
+
+        .modal-box-animated {
+            animation: modalBounceIn 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+    </style>
+</head>
+<body class="min-h-screen text-slate-800 pb-16 relative">
+
+    <!-- Animowane elementy tła -->
+    <div class="fixed top-10 left-[-50px] w-64 h-64 bg-pink-300/30 rounded-full blur-3xl pointer-events-none bg-bubble-1"></div>
+    <div class="fixed top-1/2 right-[-60px] w-80 h-80 bg-purple-300/30 rounded-full blur-3xl pointer-events-none bg-bubble-2"></div>
+    <div class="fixed bottom-10 left-1/3 w-72 h-72 bg-sky-300/30 rounded-full blur-3xl pointer-events-none bg-bubble-3"></div>
+
+    <!-- Nagłówek strony -->
+    <header class="relative z-10 bg-gradient-to-r from-pink-400 via-purple-400 via-sky-400 to-emerald-400 p-6 sm:p-8 shadow-xl text-white text-center">
+        <h1 class="text-3xl sm:text-5xl font-extrabold drop-shadow-md tracking-wide">🎨 Wielka Paleta Kolorów</h1>
+        <p class="text-base sm:text-lg mt-2 font-semibold drop-shadow opacity-95">Kliknij dowolny kolor, aby otworzyć szczegóły z animacją, opisem oraz kodami HEX i RGB!</p>
+        
+        <!-- Wyszukiwarka kolorów -->
+        <div class="max-w-md mx-auto mt-6">
+            <input type="text" id="searchInput" placeholder="🔍 Szukaj koloru po polsku, angielsku lub HEX..." 
+                   class="w-full px-5 py-3.5 rounded-2xl text-slate-800 shadow-lg border-2 border-white focus:outline-none focus:ring-4 focus:ring-amber-300 font-semibold placeholder-slate-400 transition-all">
+        </div>
+    </header>
+
+    <!-- Nawigacja po kategoriach -->
+    <nav class="relative z-10 max-w-6xl mx-auto px-4 mt-6 overflow-x-auto py-2 flex gap-2 scrollbar-none">
+        <a href="#cat-basic" class="category-badge bg-amber-400 hover:bg-amber-500 active:scale-95 text-white text-xs sm:text-sm font-bold px-4 py-2.5 rounded-full whitespace-nowrap shadow-sm transition-all">⭐ Podstawowe</a>
+        <a href="#cat-red" class="category-badge bg-rose-500 hover:bg-rose-600 active:scale-95 text-white text-xs sm:text-sm font-bold px-4 py-2.5 rounded-full whitespace-nowrap shadow-sm transition-all">❤️ Czerwienie & Róże</a>
+        <a href="#cat-orange" class="category-badge bg-orange-400 hover:bg-orange-500 active:scale-95 text-white text-xs sm:text-sm font-bold px-4 py-2.5 rounded-full whitespace-nowrap shadow-sm transition-all">☀️ Żółcie & Pomarańcze</a>
+        <a href="#cat-green" class="category-badge bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white text-xs sm:text-sm font-bold px-4 py-2.5 rounded-full whitespace-nowrap shadow-sm transition-all">🌿 Zielenie</a>
+        <a href="#cat-blue" class="category-badge bg-sky-500 hover:bg-sky-600 active:scale-95 text-white text-xs sm:text-sm font-bold px-4 py-2.5 rounded-full whitespace-nowrap shadow-sm transition-all">💧 Niebieskie & Cyjan</a>
+        <a href="#cat-purple" class="category-badge bg-purple-500 hover:bg-purple-600 active:scale-95 text-white text-xs sm:text-sm font-bold px-4 py-2.5 rounded-full whitespace-nowrap shadow-sm transition-all">🔮 Fiolety & Magenty</a>
+        <a href="#cat-brown" class="category-badge bg-amber-700 hover:bg-amber-800 active:scale-95 text-white text-xs sm:text-sm font-bold px-4 py-2.5 rounded-full whitespace-nowrap shadow-sm transition-all">🪵 Brązy & Beże</a>
+        <a href="#cat-mono" class="category-badge bg-slate-700 hover:bg-slate-800 active:scale-95 text-white text-xs sm:text-sm font-bold px-4 py-2.5 rounded-full whitespace-nowrap shadow-sm transition-all">⚪ Szarości & Czernie</a>
+    </nav>
+
+    <!-- Kontener z sekcjami kolorów -->
+    <main class="relative z-10 max-w-6xl mx-auto px-4 mt-6 space-y-10" id="mainContainer">
+        <!-- Sekcje generowane dynamicznie przez JS -->
+    </main>
+
+    <!-- Modal ze szczegółami koloru (Animowane Okienko Pop-In) -->
+    <div id="modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-black/60 backdrop-blur-md">
+        <div id="modalBox" class="bg-white rounded-[2.5rem] max-w-sm w-full overflow-hidden shadow-2xl border-4 border-white transform">
+            
+            <!-- Podgląd koloru -->
+            <div id="modalHeader" class="h-44 w-full flex items-start justify-end p-4 relative shadow-inner transition-colors duration-300">
+                <button id="closeModal" class="bg-white/80 hover:bg-white active:scale-90 text-slate-800 rounded-full w-11 h-11 flex items-center justify-center font-bold text-xl shadow-lg transition-all cursor-pointer">
+                    ✕
+                </button>
+            </div>
+
+            <!-- Dane o kolorze -->
+            <div class="p-5 text-center space-y-3">
+                <div>
+                    <h2 id="modalNamePl" class="text-2xl font-bold text-slate-800">Czerwony</h2>
+                    <p id="modalNameEn" class="text-sm font-bold text-slate-400 uppercase tracking-widest">RED</p>
+                </div>
+
+                <!-- Opis po polsku -->
+                <p id="modalDescription" class="text-slate-600 text-sm leading-relaxed bg-slate-50 p-3 rounded-2xl border border-slate-100 font-medium">
+                    Opis koloru...
+                </p>
+
+                <!-- Kody koloru -->
+                <div class="space-y-2">
+                    <div class="bg-slate-100 p-3 rounded-2xl flex items-center justify-between">
+                        <div class="text-left">
+                            <span class="block text-[10px] font-bold text-slate-400 uppercase">Kod HEX</span>
+                            <span id="modalHex" class="font-mono text-base font-bold text-slate-800">#FF0000</span>
+                        </div>
+                        <button onclick="copyCode('hex')" class="bg-indigo-500 hover:bg-indigo-600 active:scale-95 text-white text-xs font-bold px-3 py-2 rounded-xl transition-all shadow cursor-pointer">
+                            Kopiuj HEX
+                        </button>
+                    </div>
+
+                    <div class="bg-slate-100 p-3 rounded-2xl flex items-center justify-between">
+                        <div class="text-left">
+                            <span class="block text-[10px] font-bold text-slate-400 uppercase">Kod RGB</span>
+                            <span id="modalRgb" class="font-mono text-base font-bold text-slate-800">rgb(255, 0, 0)</span>
+                        </div>
+                        <button onclick="copyCode('rgb')" class="bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white text-xs font-bold px-3 py-2 rounded-xl transition-all shadow cursor-pointer">
+                            Kopiuj RGB
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Toast potwierdzenia kopiowania -->
+                <div id="toast" class="hidden text-emerald-600 font-bold text-xs pt-1 transition-all">
+                    ✓ Skopiowano do schowka!
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Dane kolorów i logika JavaScript -->
+    <script>
+        const colorCategories = [
+            {
+                id: 'cat-basic',
+                title: 'Główne Kolory Podstawowe',
+                icon: '⭐',
+                colors: [
+                    { namePl: 'Czerwony', nameEn: 'Red', hex: '#FF0000', rgb: 'rgb(255, 0, 0)', textColor: '#ffffff', description: 'Podstawowa barwa cieplna. Symbolizuje energię, pasję i dynamizm.' },
+                    { namePl: 'Zielony', nameEn: 'Green', hex: '#008000', rgb: 'rgb(0, 128, 0)', textColor: '#ffffff', description: 'Kolor natury, świeżości i spokoju. Bardzo popularny w projektach.' },
+                    { namePl: 'Niebieski', nameEn: 'Blue', hex: '#0000FF', rgb: 'rgb(0, 0, 255)', textColor: '#ffffff', description: 'Klasyczny odcień nieba i wody. Kojarzy się z zaufaniem i czystością.' },
+                    { namePl: 'Żółty', nameEn: 'Yellow', hex: '#FFFF00', rgb: 'rgb(255, 255, 0)', textColor: '#000000', description: 'Jasny, wesoły kolor słoneczny. Przyciąga uwagę i dodaje energii.' },
+                    { namePl: 'Pomarańczowy', nameEn: 'Orange', hex: '#FFA500', rgb: 'rgb(255, 165, 0)', textColor: '#000000', description: 'Ciepłe połączenie czerwieni i żółci. Żywy, przyjazny i promienny.' },
+                    { namePl: 'Fioletowy', nameEn: 'Purple', hex: '#800080', rgb: 'rgb(128, 0, 128)', textColor: '#ffffff', description: 'Tajemnicza barwa królewska powstała z połączenia czerwieni z niebieskim.' },
+                    { namePl: 'Czarny', nameEn: 'Black', hex: '#000000', rgb: 'rgb(0, 0, 0)', textColor: '#ffffff', description: 'Absorbuje całe światło. Elegancki, głęboki i kontrastowy.' },
+                    { namePl: 'Biały', nameEn: 'White', hex: '#FFFFFF', rgb: 'rgb(255, 255, 255)', textColor: '#000000', description: 'Jasna barwa stanowiąca podkład większości stron internetowych.' }
+                ]
+            },
+            {
+                id: 'cat-red',
+                title: 'Czerwienie i Róże',
+                icon: '❤️',
+                colors: [
+                    { namePl: 'Karmazynowy', nameEn: 'Crimson', hex: '#DC143C', rgb: 'rgb(220, 20, 60)', textColor: '#ffffff', description: 'Głęboki, wyrazisty odcień czerwieni o lekko purpurowym tonie.' },
+                    { namePl: 'Ciemnoczerwony', nameEn: 'DarkRed', hex: '#8B0000', rgb: 'rgb(139, 0, 0)', textColor: '#ffffff', description: 'Wytworny, stonowany odcień czerwieni.' },
+                    { namePl: 'Różowy', nameEn: 'Pink', hex: '#FFC0CB', rgb: 'rgb(255, 192, 203)', textColor: '#000000', description: 'Delikatny, jasny odcień różu.' },
+                    { namePl: 'Jaskrawy Róż', nameEn: 'HotPink', hex: '#FF69B4', rgb: 'rgb(255, 105, 180)', textColor: '#ffffff', description: 'Energiczny, intensywny róż budzący uwagę.' },
+                    { namePl: 'Głęboki Róż', nameEn: 'DeepPink', hex: '#FF1493', rgb: 'rgb(255, 20, 147)', textColor: '#ffffff', description: 'Bardzo nasycony i promienny odcień różowego.' },
+                    { namePl: 'Łososiowy', nameEn: 'Salmon', hex: '#FA8072', rgb: 'rgb(250, 128, 114)', textColor: '#000000', description: 'Ciepły odcień z pogranicza różu, pomarańczu i czerwieni.' }
+                ]
+            },
+            {
+                id: 'cat-orange',
+                title: 'Żółcie i Pomarańcze',
+                icon: '☀️',
+                colors: [
+                    { namePl: 'Ciemnopomarańczowy', nameEn: 'DarkOrange', hex: '#FF8C00', rgb: 'rgb(255, 140, 0)', textColor: '#000000', description: 'Głęboka, soczysta odmiana koloru pomarańczowego.' },
+                    { namePl: 'Koralowy', nameEn: 'Coral', hex: '#FF7F50', rgb: 'rgb(255, 127, 80)', textColor: '#000000', description: 'Ciepły i modny kolor inspirowany rafą koralową.' },
+                    { namePl: 'Złoty', nameEn: 'Gold', hex: '#FFD700', rgb: 'rgb(255, 215, 0)', textColor: '#000000', description: 'Cenna, lśniąca barwa symbolizująca bogactwo i sukces.' },
+                    { namePl: 'Cytrynowy', nameEn: 'LemonChiffon', hex: '#FFFACD', rgb: 'rgb(255, 250, 205)', textColor: '#000000', description: 'Brakująco delikatny, pastelowy odcień żółtego.' },
+                    { namePl: 'Bursztynowy', nameEn: 'Khaki', hex: '#F0E68C', rgb: 'rgb(240, 230, 140)', textColor: '#000000', description: 'Stonowany, naturalny odcień żółtobrązowy.' }
+                ]
+            },
+            {
+                id: 'cat-green',
+                title: 'Zielenie',
+                icon: '🌿',
+                colors: [
+                    { namePl: 'Limonkowy', nameEn: 'Lime', hex: '#00FF00', rgb: 'rgb(0, 255, 0)', textColor: '#000000', description: 'Jaskrawa, neonowa zieleń o maksymalnym nasyceniu.' },
+                    { namePl: 'Leśna Zieleń', nameEn: 'ForestGreen', hex: '#228B22', rgb: 'rgb(34, 139, 34)', textColor: '#ffffff', description: 'Ciemniejszy odcień przypominający koronę drzew leśnych.' },
+                    { namePl: 'Ciemnozielony', nameEn: 'DarkGreen', hex: '#006400', rgb: 'rgb(0, 100, 0)', textColor: '#ffffff', description: 'Głęboka, elegancka zieleń.' },
+                    { namePl: 'Wiosenna Zieleń', nameEn: 'SpringGreen', hex: '#00FF7F', rgb: 'rgb(0, 255, 127)', textColor: '#000000', description: 'Jasny, soczysty odcień seledynu i świeżej trawy.' },
+                    { namePl: 'Oliwkowy', nameEn: 'Olive', hex: '#808000', rgb: 'rgb(128, 128, 0)', textColor: '#ffffff', description: 'Ciepła zieleń z nutą żółci i brązu.' },
+                    { namePl: 'Morska Zieleń', nameEn: 'SeaGreen', hex: '#2E8B57', rgb: 'rgb(46, 139, 87)', textColor: '#ffffff', description: 'Spokojna zieleń zmieszana z błękitem oceanu.' }
+                ]
+            },
+            {
+                id: 'cat-blue',
+                title: 'Niebieskie i Cyjan',
+                icon: '💧',
+                colors: [
+                    { namePl: 'Cyjan / Seledyn', nameEn: 'Cyan', hex: '#00FFFF', rgb: 'rgb(0, 255, 255)', textColor: '#000000', description: 'Jasnoniebieski, krystaliczny kolor wody.' },
+                    { namePl: 'Błękit Nieba', nameEn: 'SkyBlue', hex: '#87CEEB', rgb: 'rgb(135, 206, 235)', textColor: '#000000', description: 'Jasny i pogodny odcień wakacyjnego nieba.' },
+                    { namePl: 'Królewski Błękit', nameEn: 'RoyalBlue', hex: '#4169E1', rgb: 'rgb(65, 105, 225)', textColor: '#ffffff', description: 'Niezwykle elegancki i wyrazisty odcień niebieskiego.' },
+                    { namePl: 'Granatowy', nameEn: 'Navy', hex: '#000080', rgb: 'rgb(0, 0, 128)', textColor: '#ffffff', description: 'Bardzo ciemny, dostojny odcień niebieskiego.' },
+                    { namePl: 'Turkusowy', nameEn: 'Turquoise', hex: '#40E0D0', rgb: 'rgb(64, 224, 208)', textColor: '#000000', description: 'Ezoteryczny odcień pomiędzy niebieskim a zielonym.' }
+                ]
+            },
+            {
+                id: 'cat-purple',
+                title: 'Fiolety i Magenty',
+                icon: '🔮',
+                colors: [
+                    { namePl: 'Fiołkowy', nameEn: 'Violet', hex: '#EE82EE', rgb: 'rgb(238, 130, 238)', textColor: '#000000', description: 'Jasny, wesoły fiolet przypominający kwiaty fiołka.' },
+                    { namePl: 'Magenta', nameEn: 'Magenta', hex: '#FF00FF', rgb: 'rgb(255, 0, 255)', textColor: '#ffffff', description: 'Jaskrawa purpura o intensywnym barwniku.' },
+                    { namePl: 'Indigo', nameEn: 'Indigo', hex: '#4B0082', rgb: 'rgb(75, 0, 130)', textColor: '#ffffff', description: 'Głęboki fiolet wpadający w nocny granat.' },
+                    { namePl: 'Storczykowy', nameEn: 'Orchid', hex: '#DA70D6', rgb: 'rgb(218, 112, 214)', textColor: '#000000', description: 'Subtelny odcień różu i fioletu.' },
+                    { namePl: 'Śliwkowy', nameEn: 'Plum', hex: '#DDA0DD', rgb: 'rgb(221, 160, 221)', textColor: '#000000', description: 'Pastelowy fiolet inspirowany dojrzałą śliwką.' }
+                ]
+            },
+            {
+                id: 'cat-brown',
+                title: 'Brązy i Beże',
+                icon: '🪵',
+                colors: [
+                    { namePl: 'Brązowy', nameEn: 'Brown', hex: '#A52A2A', rgb: 'rgb(165, 42, 42)', textColor: '#ffffff', description: 'Naturalny, ziemski kolor drewna i gleby.' },
+                    { namePl: 'Czekoladowy', nameEn: 'Chocolate', hex: '#D2691E', rgb: 'rgb(210, 105, 30)', textColor: '#ffffff', description: 'Ciepły, apetyczny odcień brązu.' },
+                    { namePl: 'Piaskowy', nameEn: 'SandyBrown', hex: '#F4A460', rgb: 'rgb(244, 164, 96)', textColor: '#000000', description: 'Jasny brąz przypominający ciepły piustynny piasek.' },
+                    { namePl: 'Beżowy', nameEn: 'Beige', hex: '#F5F5DC', rgb: 'rgb(245, 245, 220)', textColor: '#000000', description: 'Bardzo jasny, naturalny odcień kremowy.' }
+                ]
+            },
+            {
+                id: 'cat-mono',
+                title: 'Szarości i Czernie',
+                icon: '⚪',
+                colors: [
+                    { namePl: 'Srebrny', nameEn: 'Silver', hex: '#C0C0C0', rgb: 'rgb(192, 192, 192)', textColor: '#000000', description: 'Jasny odcień szarości o metalicznym tonie.' },
+                    { namePl: 'Szary', nameEn: 'Gray', hex: '#808080', rgb: 'rgb(128, 128, 128)', textColor: '#ffffff', description: 'Neutralna barwa pośrednia między bielą a czernią.' },
+                    { namePl: 'Ciemnoszary', nameEn: 'DimGray', hex: '#696969', rgb: 'rgb(105, 105, 105)', textColor: '#ffffff', description: 'Głęboka szarość zapewniająca mocny ton.' }
+                ]
+            }
+        ];
+
+        const container = document.getElementById('mainContainer');
+        const modal = document.getElementById('modal');
+        const modalBox = document.getElementById('modalBox');
+        const modalHeader = document.getElementById('modalHeader');
+        const modalNamePl = document.getElementById('modalNamePl');
+        const modalNameEn = document.getElementById('modalNameEn');
+        const modalDescription = document.getElementById('modalDescription');
+        const modalHex = document.getElementById('modalHex');
+        const modalRgb = document.getElementById('modalRgb');
+        const closeModalBtn = document.getElementById('closeModal');
+        const toast = document.getElementById('toast');
+        const searchInput = document.getElementById('searchInput');
+
+        // Dynamiczne wyrenderowanie wszystkich kolorów w sekcjach z animacjami
+        function renderCategories() {
+            container.innerHTML = '';
+            colorCategories.forEach((cat) => {
+                const section = document.createElement('section');
+                section.id = cat.id;
+                section.className = "bg-white/90 backdrop-blur-sm p-5 sm:p-6 rounded-[2rem] shadow-sm border border-slate-100 scroll-mt-24 transition-all";
+
+                section.innerHTML = `
+                    <h2 class="text-xl sm:text-2xl font-bold text-slate-800 mb-4 flex items-center gap-2">
+                        <span>${cat.icon}</span> ${cat.title}
+                    </h2>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4 color-grid">
+                    </div>
+                `;
+
+                const grid = section.querySelector('.color-grid');
+
+                cat.colors.forEach((color, index) => {
+                    const btn = document.createElement('button');
+                    btn.className = "color-card animate-card-appear rounded-[1.5rem] p-4 flex flex-col justify-between h-32 text-left shadow-sm border border-black/5 cursor-pointer";
+                    btn.style.backgroundColor = color.hex;
+                    btn.style.color = color.textColor;
+                    btn.style.animationDelay = `${index * 0.05}s`; // Opóźnienie animacji wejścia
+                    
+                    btn.dataset.namePl = color.namePl.toLowerCase();
+                    btn.dataset.nameEn = color.nameEn.toLowerCase();
+                    btn.dataset.hex = color.hex.toLowerCase();
+
+                    btn.innerHTML = `
+                        <div class="font-extrabold text-base sm:text-lg leading-snug drop-shadow-sm">${color.namePl}</div>
+                        <div class="flex items-center justify-between mt-auto">
+                            <span class="text-[11px] font-mono font-bold opacity-85 uppercase tracking-wider">${color.nameEn}</span>
+                            <span class="text-[10px] font-mono bg-black/20 text-white px-2.5 py-1 rounded-full font-bold backdrop-blur-md shadow-xs">${color.hex}</span>
+                        </div>
+                    `;
+
+                    btn.addEventListener('click', () => openModal(color));
+                    grid.appendChild(btn);
+                });
+
+                container.appendChild(section);
+            });
+        }
+
+        // Otwarzanie okna modalnego z podglądem i animacją pop-in
+        function openModal(color) {
+            modalHeader.style.backgroundColor = color.hex;
+            modalNamePl.textContent = color.namePl;
+            modalNameEn.textContent = color.nameEn;
+            modalDescription.textContent = color.description;
+            modalHex.textContent = color.hex;
+            modalRgb.textContent = color.rgb;
+
+            toast.classList.add('hidden');
+            
+            modal.classList.remove('hidden');
+            modal.classList.add('modal-overlay-active');
+            
+            modalBox.classList.remove('modal-box-animated');
+            void modalBox.offsetWidth; // Wymuszenie ponownego przeliczenia animacji
+            modalBox.classList.add('modal-box-animated');
+        }
+
+        // Zamknięcie modala
+        function closeModal() {
+            modal.classList.remove('modal-overlay-active');
+            modal.classList.add('hidden');
+        }
+
+        // Kopiowanie kodu HEX/RGB do schowka
+        function copyCode(type) {
+            const textToCopy = type === 'hex' ? modalHex.textContent : modalRgb.textContent;
+            
+            const temp = document.createElement('input');
+            temp.value = textToCopy;
+            document.body.appendChild(temp);
+            temp.select();
+            document.execCommand('copy');
+            document.body.removeChild(temp);
+
+            toast.classList.remove('hidden');
+            setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 2000);
+        }
+
+        // Wyszukiwarka kolorów w czasie rzeczywistym
+        searchInput.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase().trim();
+            const cards = document.querySelectorAll('.color-card');
+
+            cards.forEach(card => {
+                const match = card.dataset.namePl.includes(query) || 
+                              card.dataset.nameEn.includes(query) || 
+                              card.dataset.hex.includes(query);
+
+                if (match) {
+                    card.style.display = 'flex';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+
+        closeModalBtn.addEventListener('click', closeModal);
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) closeModal();
+        });
+
+        // Uruchomienie generowania strony po załadowaniu
+        renderCategories();
+    </script>
+</body>
+</html>
